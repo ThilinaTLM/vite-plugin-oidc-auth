@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-oidc-auth",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A Vite plugin for OIDC authentication during development",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,7 +27,7 @@
     "oauth",
     "development"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "ThilinaTLM <thilinalakshanmail@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
