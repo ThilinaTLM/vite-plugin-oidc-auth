@@ -1,14 +1,18 @@
-import type { Plugin, ViteDevServer } from "vite";
-import { createServer, IncomingMessage, ServerResponse } from "node:http";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from "node:http";
 import * as client from "openid-client";
+import type { Plugin, ViteDevServer } from "vite";
 
+import {
+  getDefaultOidcPluginOptions,
+  getEnvOidcPluginOptions,
+} from "./config.js";
+import { createErrorPage, createSuccessPage } from "./templates.js";
 import type { OidcPluginOptions } from "./types.js";
 import { openBrowser } from "./utils.js";
-import { createSuccessPage, createErrorPage } from "./templates.js";
-import {
-	getEnvOidcPluginOptions,
-	getDefaultOidcPluginOptions,
-} from "./config.js";
 
 function oidcPlugin(
 	options: OidcPluginOptions = getDefaultOidcPluginOptions(),
@@ -16,7 +20,7 @@ function oidcPlugin(
 	if (!options.oidcOptions) {
 		try {
 			options.oidcOptions = getEnvOidcPluginOptions(options.envFilePath);
-		} catch (error) {
+		} catch (_error) {
 			console.warn(
 				"⚠️  [OIDC Auth] Plugin will be disabled due to configuration error",
 			);
@@ -84,7 +88,7 @@ function oidcPlugin(
 
 							process.env.VITE_API_TOKEN = tokens.access_token;
 
-							if (server && server.config.define) {
+							if (server?.config.define) {
 								server.config.define["import.meta.env.VITE_API_TOKEN"] =
 									JSON.stringify(tokens.access_token);
 							}
