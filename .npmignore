@@ -1,0 +1,45 @@
+# Source files
+packages/
+src/
+*.ts
+!dist/
+
+# Development files
+.vscode/
+.env*
+!.env.example
+tsconfig.json
+vite.config.*
+vitest.config.*
+
+# Build artifacts
+node_modules/
+*.log
+*.lock
+pnpm-lock.yaml
+yarn.lock
+
+# Testing
+coverage/
+.nyc_output/
+test/
+tests/
+__tests__/
+*.test.*
+*.spec.*
+
+# Development tools
+.git/
+.gitignore
+.editorconfig
+.prettier*
+.eslint*
+
+# Documentation (keep README.md)
+docs/
+*.md
+!README.md
+
+# Misc
+.DS_Store
+Thumbs.db 
