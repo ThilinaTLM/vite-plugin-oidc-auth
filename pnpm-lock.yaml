@@ -11,6 +11,9 @@ importers:
       dotenv:
         specifier: ^17.0.1
         version: 17.0.1
+      jwt-decode:
+        specifier: ^4.0.0
+        version: 4.0.0
       openid-client:
         specifier: ^6.6.2
         version: 6.6.2
@@ -364,6 +367,10 @@ packages:
   jose@6.0.11:
     resolution: {integrity: sha512-QxG7EaliDARm1O1S8BGakqncGT9s25bKL1WSf6/oa17Tkqwi8D2ZNglqCF+DsYF88/rV66Q/Q2mFAy697E1DUg==}
 
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -663,6 +670,8 @@ snapshots:
     optional: true
 
   jose@6.0.11: {}
+
+  jwt-decode@4.0.0: {}
 
   nanoid@3.3.11: {}
 

@@ -3,7 +3,10 @@ import {
   type IncomingMessage,
   type ServerResponse,
 } from "node:http";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import * as client from "openid-client";
+import { jwtDecode } from "jwt-decode";
 import type { Plugin, ViteDevServer } from "vite";
 
 import {
@@ -13,6 +16,72 @@ import {
 import { createErrorPage, createSuccessPage } from "./templates.js";
 import type { OidcPluginOptions } from "./types.js";
 import { openBrowser } from "./utils.js";
+
+interface CachedTokenData {
+  access_token: string;
+  refresh_token?: string;
+  expires_at: number;
+  token_type?: string;
+}
+
+function getCacheFilePath(cacheFile: string): string {
+  return path.resolve(process.cwd(), cacheFile);
+}
+
+function readCachedToken(cacheFile: string): CachedTokenData | null {
+  try {
+    const cacheFilePath = getCacheFilePath(cacheFile);
+    if (!fs.existsSync(cacheFilePath)) {
+      return null;
+    }
+    
+    const cachedData = fs.readFileSync(cacheFilePath, 'utf8');
+    return JSON.parse(cachedData) as CachedTokenData;
+  } catch (error) {
+    console.warn("⚠️  [OIDC Auth] Failed to read cached token:", error);
+    return null;
+  }
+}
+
+function writeCachedToken(cacheFile: string, tokenData: CachedTokenData): void {
+  try {
+    const cacheFilePath = getCacheFilePath(cacheFile);
+    fs.writeFileSync(cacheFilePath, JSON.stringify(tokenData, null, 2));
+  } catch (error) {
+    console.warn("⚠️  [OIDC Auth] Failed to write cached token:", error);
+  }
+}
+
+function isTokenExpired(token: string, bufferSeconds: number = 300): boolean {
+  try {
+    const decoded = jwtDecode(token);
+    if (!decoded.exp) {
+      return true;
+    }
+    
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = decoded.exp - bufferSeconds;
+    return now >= expiresAt;
+  } catch (error) {
+    console.warn("⚠️  [OIDC Auth] Failed to decode token:", error);
+    return true;
+  }
+}
+
+function validateCachedToken(cacheFile: string): string | null {
+  const cachedData = readCachedToken(cacheFile);
+  if (!cachedData) {
+    return null;
+  }
+  
+  if (isTokenExpired(cachedData.access_token)) {
+    console.log("🔄 [OIDC Auth] Cached token has expired");
+    return null;
+  }
+  
+  console.log("✅ [OIDC Auth] Using cached token");
+  return cachedData.access_token;
+}
 
 function oidcPlugin(
 	options: OidcPluginOptions = getDefaultOidcPluginOptions(),
@@ -59,6 +128,20 @@ function oidcPlugin(
 			}
 
 			const server = devServer;
+			const cacheFile = options.cacheFile || ".oidc-cache";
+			
+			const cachedToken = validateCachedToken(cacheFile);
+			if (cachedToken) {
+				process.env.VITE_API_TOKEN = cachedToken;
+				if (server?.config.define) {
+					server.config.define["import.meta.env.VITE_API_TOKEN"] = JSON.stringify(cachedToken);
+				}
+				console.log("🔑 [OIDC Auth] Using cached token:", cachedToken);
+				return;
+			}
+
+			console.log("🔄 [OIDC Auth] No valid cached token found, starting SSO flow");
+
 			const { port, hostname } = new URL(
 				options.oidcOptions?.redirectUri || "",
 			);
@@ -93,8 +176,17 @@ function oidcPlugin(
 									JSON.stringify(tokens.access_token);
 							}
 
+							const tokenData: CachedTokenData = {
+								access_token: tokens.access_token,
+								refresh_token: tokens.refresh_token,
+								expires_at: tokens.expires_in || 0,
+								token_type: tokens.token_type,
+							};
+							writeCachedToken(cacheFile, tokenData);
+
 							console.log("✅ [OIDC Auth] Access token obtained successfully!");
 							console.log("🔑 [OIDC Auth] Token:", tokens.access_token);
+							console.log("💾 [OIDC Auth] Token cached for future use");
 							res.writeHead(200, { "Content-Type": "text/html" });
 							res.end(createSuccessPage());
 						} catch (error) {

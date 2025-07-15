@@ -10,4 +10,5 @@ export type OidcPluginOptions = {
 	oidcOptions?: OidcOptions;
 	openBrowser?: boolean;
 	envFilePath?: string;
+  cacheFile?: string;
 };

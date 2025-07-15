@@ -48,5 +48,6 @@ export function getEnvOidcPluginOptions(envFilePath?: string): OidcOptions {
 export function getDefaultOidcPluginOptions(): OidcPluginOptions {
   return {
     openBrowser: true,
+    cacheFile: ".oidc-cache",
   };
 }

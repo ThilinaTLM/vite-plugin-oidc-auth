@@ -45,6 +45,7 @@
 	},
 	"dependencies": {
 		"dotenv": "^17.0.1",
+		"jwt-decode": "^4.0.0",
 		"openid-client": "^6.6.2"
 	}
 }
