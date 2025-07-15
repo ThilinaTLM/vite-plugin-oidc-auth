@@ -18,7 +18,9 @@
 	],
 	"scripts": {
 		"build": "tsc",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "npm run build",
+		"format": "biome format --write",
+		"lint": "biome lint --write"
 	},
 	"keywords": [
 		"vite-plugin",
@@ -45,7 +47,6 @@
 	},
 	"dependencies": {
 		"dotenv": "^17.0.1",
-		"jwt-decode": "^4.0.0",
 		"openid-client": "^6.6.2"
 	}
 }

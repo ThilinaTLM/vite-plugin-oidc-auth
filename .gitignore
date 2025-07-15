@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # OIDC cache files
-.oidc-cache
+.oidc-cache.json
