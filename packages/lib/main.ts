@@ -17,28 +17,6 @@ import { openBrowser } from "./utils.js";
 function oidcPlugin(
 	options: OidcPluginOptions = getDefaultOidcPluginOptions(),
 ): Plugin {
-	if (!options.oidcOptions) {
-		try {
-			options.oidcOptions = getEnvOidcPluginOptions(options.envFilePath);
-		} catch (_error) {
-			console.warn(
-				"⚠️  [OIDC Auth] Plugin will be disabled due to configuration error",
-			);
-			return {
-				name: "vite-plugin-oidc-auth",
-				apply: () => false,
-			};
-		}
-	}
-
-	console.log(
-		`⚙️  [OIDC Auth] Plugin initialized with auto-browser: ${
-			options.openBrowser ? "enabled" : "disabled"
-		}`,
-	);
-
-	let server: ViteDevServer | null = null;
-
 	return {
 		name: "vite-plugin-oidc-auth",
 		apply(_config, { command }) {
@@ -47,6 +25,23 @@ function oidcPlugin(
 
 		config(config, { command }) {
 			if (command !== "serve") return;
+
+			if (!options.oidcOptions) {
+				try {
+					options.oidcOptions = getEnvOidcPluginOptions(options.envFilePath);
+				} catch (_error) {
+					console.warn(
+						"⚠️  [OIDC Auth] Plugin will be disabled due to configuration error",
+					);
+					return;
+				}
+			}
+
+			console.log(
+				`⚙️  [OIDC Auth] Plugin initialized with auto-browser: ${
+					options.openBrowser ? "enabled" : "disabled"
+				}`,
+			);
 
 			if (!config.define) {
 				config.define = {};
@@ -58,7 +53,12 @@ function oidcPlugin(
 		},
 
 		configureServer(devServer: ViteDevServer) {
-			server = devServer;
+			if (!options.oidcOptions) {
+				console.warn("⚠️  [OIDC Auth] Plugin disabled due to missing configuration");
+				return;
+			}
+
+			const server = devServer;
 			const { port, hostname } = new URL(
 				options.oidcOptions?.redirectUri || "",
 			);
