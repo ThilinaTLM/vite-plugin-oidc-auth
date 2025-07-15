@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-oidc-auth",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "A Vite plugin for OIDC authentication during development (dev mode only)",
 	"type": "module",
 	"main": "./dist/index.js",
