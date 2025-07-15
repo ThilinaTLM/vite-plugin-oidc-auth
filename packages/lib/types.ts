@@ -10,4 +10,13 @@ export type OidcPluginOptions = {
 	oidcOptions?: OidcOptions;
 	openBrowser?: boolean;
 	envFilePath?: string;
+  cacheFile?: string;
+  serverTimeout?: number; // in seconds
 };
+
+export type CachedTokenData = {
+  access_token: string;
+  refresh_token?: string;
+  expires_at: number;
+  token_type?: string;
+}
