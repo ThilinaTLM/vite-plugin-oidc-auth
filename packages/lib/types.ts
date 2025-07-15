@@ -11,6 +11,7 @@ export type OidcPluginOptions = {
 	openBrowser?: boolean;
 	envFilePath?: string;
   cacheFile?: string;
+  serverTimeout?: number; // in seconds
 };
 
 export type CachedTokenData = {

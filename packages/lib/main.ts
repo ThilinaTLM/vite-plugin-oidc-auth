@@ -153,6 +153,9 @@ function oidcPlugin(
               res.writeHead(500, { "Content-Type": "text/html" });
               res.end(createErrorPage());
             } finally {
+              if (serverTimeout) {
+                clearTimeout(serverTimeout);
+              }
               tempHttpServer.close();
             }
           } else {
@@ -161,10 +164,26 @@ function oidcPlugin(
               .end("Bad Request: No authorization code received");
           }
         }
-      ).listen(parseInt(port, 10), hostname, async () => {
+      );
+
+      let serverTimeout: NodeJS.Timeout | null = null;
+
+      tempHttpServer.listen(parseInt(port, 10), hostname, async () => {
         console.log(
           `🚀 [OIDC Auth] Starting authentication server on ${hostname}:${port}`
         );
+
+        const timeoutSeconds = options.serverTimeout || 30;
+        serverTimeout = setTimeout(() => {
+          console.log(
+            `⏱️  [OIDC Auth] Server timeout reached (${timeoutSeconds}s). Closing authentication server.`
+          );
+          console.log(
+            "❌ [OIDC Auth] Authentication was not completed within the timeout period"
+          );
+          tempHttpServer.close();
+        }, timeoutSeconds * 1000);
+
         try {
           const discoveryUrl = new URL(options.oidcOptions?.discoveryUrl || "");
           const issuerPath = discoveryUrl.pathname.endsWith(
@@ -200,6 +219,9 @@ function oidcPlugin(
             `🔒 [OIDC Auth] Authentication URL generated successfully`
           );
           console.log(`🌐 [OIDC Auth] ${authorizationUrl.href}`);
+          console.log(
+            `⏰ [OIDC Auth] Server will timeout in ${timeoutSeconds} seconds`
+          );
 
           if (options.openBrowser) {
             console.log(`🚀 [OIDC Auth] Opening browser automatically...`);
@@ -211,6 +233,9 @@ function oidcPlugin(
           }
         } catch (error) {
           console.error("❌ [OIDC Auth] Error setting up OIDC client:", error);
+          if (serverTimeout) {
+            clearTimeout(serverTimeout);
+          }
           tempHttpServer.close();
         }
       });

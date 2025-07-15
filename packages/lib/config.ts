@@ -49,5 +49,6 @@ export function getDefaultOidcPluginOptions(): OidcPluginOptions {
   return {
     openBrowser: true,
     cacheFile: ".oidc-cache.json",
+    serverTimeout: 30, // seconds
   };
 }
