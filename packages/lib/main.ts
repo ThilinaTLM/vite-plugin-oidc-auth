@@ -101,6 +101,8 @@ function oidcPlugin(
       );
 
       const codeVerifier = client.randomPKCECodeVerifier();
+      const expectedState = client.randomState();
+      const expectedNonce = client.randomNonce();
       let codeChallenge: string;
       let config: client.Configuration;
 
@@ -120,6 +122,8 @@ function oidcPlugin(
                 currentUrl,
                 {
                   pkceCodeVerifier: codeVerifier,
+                  expectedState,
+                  expectedNonce,
                 }
               );
 
@@ -213,6 +217,8 @@ function oidcPlugin(
             scope: options.oidcOptions?.scope || "",
             code_challenge: codeChallenge,
             code_challenge_method: "S256",
+            state: expectedState,
+            nonce: expectedNonce,
           });
 
           console.log(
