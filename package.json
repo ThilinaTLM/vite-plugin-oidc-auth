@@ -42,11 +42,11 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.0.6",
 		"@types/node": "^24.0.10",
-		"typescript": "~5.8.3",
-		"vite": "^7.0.0"
+		"typescript": "~5.9.3",
+		"vite": "^7.3.1"
 	},
 	"dependencies": {
-		"dotenv": "^17.0.1",
-		"openid-client": "^6.6.2"
+		"dotenv": "^17.3.1",
+		"openid-client": "^6.8.2"
 	}
 }
