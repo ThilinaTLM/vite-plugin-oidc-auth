@@ -18,8 +18,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Fetch action
-        run: git clone https://x-access-token:${{ secrets.ACTION_PAT }}@github.com/ThilinaTLM/codebox-swe-agents.git /tmp/action --depth 1
-      - uses: /tmp/action/codebox-github-action
+        run: |
+          echo '.codebox-action/' >> .git/info/exclude
+          git clone https://x-access-token:${{ secrets.ACTION_PAT }}@github.com/ThilinaTLM/codebox-swe-agents.git ./.codebox-action --depth 1
+      - uses: ./.codebox-action/codebox-github-action
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           openrouter-api-key: ${{ secrets.OPENROUTER_API_KEY }}
