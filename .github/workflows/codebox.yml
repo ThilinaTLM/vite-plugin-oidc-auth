@@ -1,0 +1,24 @@
+name: Codebox Agent
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  agent:
+    if: contains(github.event.comment.body, '/codebox')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - uses: ThilinaTLM/codebox-swe-agents/codebox-github-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          openrouter-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          openrouter-model: ${{ vars.OPENROUTER_MODEL }}
