@@ -3,6 +3,7 @@
 	"version": "0.4.0",
 	"description": "A Vite plugin for OIDC authentication during development (dev mode only)",
 	"type": "module",
+	"packageManager": "pnpm@11.17.0",
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -18,7 +19,9 @@
 	],
 	"scripts": {
 		"build": "tsc",
+		"check": "biome check packages && tsc --noEmit",
 		"prepublishOnly": "npm run build",
+		"release:verify-tag": "node scripts/verify-release-tag.mjs",
 		"format": "biome format --write",
 		"lint": "biome lint --write"
 	},
