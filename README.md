@@ -95,13 +95,14 @@ fetch('/api/data', {
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `OIDC_DISCOVERY_URL` | Yes | OIDC discovery endpoint URL |
-| `OIDC_CLIENT_ID` | Yes | OAuth client ID |
-| `OIDC_CLIENT_SECRET` | Yes | OAuth client secret |
-| `OIDC_REDIRECT_URI` | Yes | Redirect URI for OAuth callback |
-| `OIDC_SCOPE` | Yes | OAuth scopes (e.g., "openid profile email") |
+| Variable             | Required | Description                                                           |
+|----------------------|----------|-----------------------------------------------------------------------|
+| `OIDC_DISCOVERY_URL` | Yes      | OIDC discovery endpoint URL                                           |
+| `OIDC_CLIENT_ID`     | Yes      | OAuth client ID                                                       |
+| `OIDC_CLIENT_SECRET` | Yes      | OAuth client secret                                                   |
+| `OIDC_REDIRECT_URI`  | Yes      | Redirect URI for OAuth callback                                       |
+| `OIDC_SCOPE`         | Yes      | OAuth scopes (e.g., "openid profile email")                           |
+| `OIDC_RESOURCE`      | No       | OAuth resource indicator, for requesting an audience-restricted token |
 
 ## How It Works
 
