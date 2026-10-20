@@ -1,0 +1,7 @@
+# Enable required code-owner reviews in the main branch ruleset to enforce this.
+/.github/ @ThilinaTLM
+/package.json @ThilinaTLM
+/pnpm-lock.yaml @ThilinaTLM
+/pnpm-workspace.yaml @ThilinaTLM
+/scripts/ @ThilinaTLM
+/tests/ @ThilinaTLM

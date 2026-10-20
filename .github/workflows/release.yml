@@ -3,10 +3,8 @@ name: Release
 on:
   push:
     tags:
-      # Stable releases: v1.2.3
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      # Pre-releases: v1.2.3-rc.1, v1.2.3-beta.2, etc.
-      - "v[0-9]+.[0-9]+.[0-9]+-*"
+      # GitHub tag filters are globs; the verification job enforces strict SemVer.
+      - "v[0-9]*.[0-9]*.[0-9]*"
 
 concurrency:
   group: release-${{ github.ref }}
@@ -19,18 +17,37 @@ jobs:
   verify-tag:
     name: Verify release tag
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
 
       - name: Verify release tag
-        run: node scripts/verify-release-tag.mjs "${{ github.ref_name }}"
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          node --input-type=module <<'NODE'
+          const tag = process.env.RELEASE_TAG;
+          const numeric = '(0|[1-9][0-9]*)';
+          const identifier = '(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)';
+          const semver = new RegExp(`^v${numeric}\\.${numeric}\\.${numeric}(?:-${identifier}(?:\\.${identifier})*)?$`);
+          if (!semver.test(tag)) throw new Error('Release tag must be v-prefixed SemVer without build metadata');
+          NODE
+          node scripts/verify-release-tag.mjs "$RELEASE_TAG"
+
+      - name: Require release commit on main
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor HEAD FETCH_HEAD
 
   quality-and-package:
     name: Check, build, and package
@@ -40,15 +57,23 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js for pnpm
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: 11.17.0
+          run_install: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: pnpm
@@ -58,6 +83,9 @@ jobs:
 
       - name: Check formatting, lint, and types
         run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
 
       - name: Build package
         run: pnpm build
@@ -77,8 +105,11 @@ jobs:
             exit 1
           fi
 
+      - name: Smoke-test npm tarball
+        run: node .github/scripts/package-smoke.mjs release/npm/*.tgz
+
       - name: Upload verified npm tarball
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: npm-package
           path: release/npm/*.tgz
@@ -89,13 +120,14 @@ jobs:
     name: Publish to npmjs.com
     runs-on: ubuntu-latest
     needs: quality-and-package
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write
 
     steps:
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -116,12 +148,12 @@ jobs:
           # Trusted publishing (OIDC) requires npm >= 11.5.1.
           if [ "$(printf '%s\n11.5.1\n' "${npm_version}" | sort -V | head -n1)" != "11.5.1" ]; then
             echo "Upgrading npm to satisfy trusted publishing (>= 11.5.1)"
-            npm install -g npm@latest
+            npm install -g npm@11
             echo "npm: $(npm --version)"
           fi
 
       - name: Download verified npm tarball
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-package
           path: release/npm
@@ -155,12 +187,13 @@ jobs:
     name: Create GitHub release
     runs-on: ubuntu-latest
     needs: publish-npm
+    timeout-minutes: 5
     permissions:
       contents: write
 
     steps:
       - name: Download verified npm tarball
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: npm-package
           path: release/npm
