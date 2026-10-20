@@ -215,6 +215,9 @@ function oidcPlugin(
 					const authorizationUrl = client.buildAuthorizationUrl(config, {
 						redirect_uri: options.oidcOptions?.redirectUri || "",
 						scope: options.oidcOptions?.scope || "",
+						...(options.oidcOptions?.resource
+							? { resource: options.oidcOptions.resource }
+							: {}),
 						code_challenge: codeChallenge,
 						code_challenge_method: "S256",
 						state: expectedState,
