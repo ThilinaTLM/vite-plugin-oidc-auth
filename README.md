@@ -1,5 +1,8 @@
 # vite-plugin-oidc-auth
 
+[![CI](https://github.com/ThilinaTLM/vite-plugin-oidc-auth/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ThilinaTLM/vite-plugin-oidc-auth/actions/workflows/ci.yml)
+[![Release](https://github.com/ThilinaTLM/vite-plugin-oidc-auth/actions/workflows/release.yml/badge.svg)](https://github.com/ThilinaTLM/vite-plugin-oidc-auth/actions/workflows/release.yml)
+
 A Vite plugin that provides OIDC (OpenID Connect) authentication during development. This plugin automatically handles the OAuth flow and injects the access token into your development environment.
 
 ## Features
@@ -145,4 +148,45 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Use Node.js 24 and pnpm 11.17.0, then run:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm check # formatting, lint, and TypeScript
+pnpm test
+pnpm build
+```
+
+CI runs these checks and an npm tarball smoke test on pull requests and pushes to `main`, with read-only repository permissions and no publishing credentials for PRs. Actions are SHA-pinned to reviewed stable releases, with weekly Dependabot updates for Actions. Workflow and release tooling changes have `@ThilinaTLM` as code owner.
+
+Maintainers must configure GitHub protection externally: require **`Check, test, build, and package (Node 24)`** on `main`, require PR reviews and code-owner approval, and restrict creation, updates, and deletion of release tags to maintainers with a `v*` tag ruleset.
+
+## Releases
+
+Releases run from stable or prerelease SemVer tags, not pushes to `main`; `+build` metadata is not supported. Update `package.json` to an unpublished version, update the lockfile if needed, and merge the reviewed change after CI passes. The workflow requires the tagged commit to be in `main`'s history, and the tag without `v` must exactly match `package.json`'s version:
+
+```bash
+# From the reviewed main commit, after fetching/pulling latest changes:
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+Use the actual package version in place of `1.2.3`. Stable tags (for example, `v1.2.3`) publish to npm's `latest` dist-tag; prereleases (for example, `v1.3.0-rc.1`) publish to `next`. The release workflow verifies the tag, runs `pnpm check`, `pnpm test`, and `pnpm build`, packs and smoke-tests the package, publishes the verified tarball with provenance, and attaches it to a GitHub release. Never move an already-published tag or reuse a published npm version.
+
+### Maintainer setup: npm trusted publishing
+
+Configure this externally before pushing a release tag; repository files alone cannot establish npm trust. Follow the current [npm trusted publisher documentation](https://docs.npmjs.com/trusted-publishers/). In the npm settings for `vite-plugin-oidc-auth`, add a GitHub Actions trusted publisher with:
+
+| Setting | Value |
+| --- | --- |
+| Organization or user | `ThilinaTLM` |
+| Repository | `vite-plugin-oidc-auth` |
+| Workflow filename | `release.yml` (not the full path) |
+| Environment name | Leave empty; the publishing job currently has no environment |
+| Allowed actions | Explicitly allow **`npm publish`** for this automatic direct-publish workflow |
+
+New configurations default to stage-only publishing as of September 3, 2026; that is insufficient for this workflow. Complete the first successful publish within **2 days** of creating the configuration, or delete the expired configuration and recreate it.
+
+The workflow uses Node.js 24, npm **>= 11.5.1**, GitHub-hosted runners, and `id-token: write` for OIDC. Keep the repository and npm package public for provenance; self-hosted runners are not supported for trusted publishing. No `NPM_TOKEN` or `NODE_AUTH_TOKEN` secret is needed: npm exchanges the workflow's OIDC identity for short-lived credentials, and publication uses `--provenance --access public`.
+
+If the package does not yet exist on npm, bootstrap its first publication manually with an authorized maintainer account and 2FA before configuring the package's trusted publisher; do not add a long-lived publishing token to CI. After verifying a successful OIDC release and its provenance on npm, select **Require two-factor authentication and disallow tokens** in npm's publishing access settings and revoke obsolete publishing tokens. If adding a GitHub environment later, update both the publishing job and npm's trusted publisher to use the exact same environment name.

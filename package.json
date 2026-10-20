@@ -19,7 +19,8 @@
 	],
 	"scripts": {
 		"build": "tsc",
-		"check": "biome check packages && tsc --noEmit",
+		"check": "biome check packages scripts tests .github/scripts package.json biome.json tsconfig.json && tsc --noEmit",
+		"test": "node --test tests/*.test.mjs",
 		"prepublishOnly": "npm run build",
 		"release:verify-tag": "node scripts/verify-release-tag.mjs",
 		"format": "biome format --write",
