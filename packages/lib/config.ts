@@ -1,14 +1,14 @@
 import dotenv from "dotenv";
 import type { OidcOptions, OidcPluginOptions } from "./types.js";
 
-function getEnv(key: string): string {
+function getEnv(key: string, required: boolean = true): string {
 	const value = process.env[key];
-	if (!value) {
+	if (required && !value) {
 		throw new Error(
 			`[OIDC Auth] Environment variable ${key} is not set. This plugin requires OIDC configuration in development mode.`,
 		);
 	}
-	return value;
+	return value ?? "";
 }
 
 export function getEnvOidcPluginOptions(envFilePath?: string): OidcOptions {
@@ -32,6 +32,7 @@ export function getEnvOidcPluginOptions(envFilePath?: string): OidcOptions {
 			clientSecret: getEnv("OIDC_CLIENT_SECRET"),
 			redirectUri: getEnv("OIDC_REDIRECT_URI"),
 			scope: getEnv("OIDC_SCOPE"),
+			resource: getEnv("OIDC_RESOURCE", false),
 		};
 	} catch (error) {
 		console.error(
