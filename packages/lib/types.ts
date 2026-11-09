@@ -4,7 +4,7 @@ export type OidcOptions = {
 	clientSecret: string;
 	redirectUri: string;
 	scope: string;
-	resource: string;
+	resource?: string;
 };
 
 export type OidcPluginOptions = {
